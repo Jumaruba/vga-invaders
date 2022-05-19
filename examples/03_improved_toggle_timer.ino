@@ -10,6 +10,7 @@ void TC3_Handler()
 void startTimer(Tc *tc, uint32_t channel, IRQn_Type irq, uint32_t frequency) {
         pmc_set_writeprotect(false);
         pmc_enable_periph_clk((uint32_t)irq);
+        
         TC_Configure(tc, channel, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK4);
         uint32_t rc = VARIANT_MCK/128/frequency; //128 because we selected TIMER_CLOCK4 above
         TC_SetRA(tc, channel, rc/2); //50% high, 50% low
