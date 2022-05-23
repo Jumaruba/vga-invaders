@@ -1,7 +1,23 @@
-#include <Arduino.h> 
+#include<Arduino.h> 
 
-/* Arduino Due VGA-Out v0.2 by stimmer
-http://arduino.cc/forum/index.php/topic,130742.0.html */
+using namespace std;
+
+#define LINES 240 
+#define COLS 320  
+
+#define RED 0b10000000 
+#define GREEN 0b00010000 
+#define BLUE 0b00000010
+#define BLACK 0b00000000
+
+#define do20(x) x x x x x x x x x x x x x x x x x x x x
+#define do80(x)  do20(x) do20(x) do20(x) do20(x) 
+#define do320(x) do80(x) do80(x) do80(x) do80(x) 
+#define MNOP(x) asm volatile (" .rept " #x "\n\t nop \n\t .endr \n\t")
+
+inline int getNumNeighbors(int line, int col); 
+inline byte getCellColor(int line, int col); 
+void initMatrix();
 
 inline void digitalWriteDirect(int pin, boolean val){
   if(val) g_APinDescription[pin].pPort -> PIO_SODR = g_APinDescription[pin].ulPin;
@@ -9,15 +25,10 @@ inline void digitalWriteDirect(int pin, boolean val){
 }
 
 volatile short line;
-byte fb[240][320];
+volatile byte current_color = BLUE;
+byte fb[LINES][COLS];
 
-#define do20(x) x x x x x x x x x x x x x x x x x x x x
-#define do80(x)  do20(x) do20(x) do20(x) do20(x) 
-#define do320(x) do80(x) do80(x) do80(x) do80(x) 
-#define MNOP(x) asm volatile (" .rept " #x "\n\t nop \n\t .endr \n\t")
-
-void TC0_Handler()
-{
+void TC0_Handler(){
     long dummy=REG_TC0_SR0; 
                            
     if(line < 480){        
@@ -34,7 +45,7 @@ void TC0_Handler()
 
 void setup(){
   Serial.begin(9600);
-  for(int i=0;i<320;i++)for(int j=0;j<240;j++)fb[j][i]=j+i;
+  initMatrix();
   
   pinMode(3,OUTPUT);  pinMode(2,OUTPUT);                      // vsync=3 hsync=2
   /*pinMode(25,OUTPUT);*/ pinMode(26,OUTPUT);                     // blue  (26=msb,25=lsb)
@@ -57,23 +68,35 @@ void setup(){
   NVIC_EnableIRQ(TC0_IRQn);
 }
 
-using namespace std;
-
+int squareSize = 10; 
+int startPos = 100;
+volatile byte incomingByte; 
+volatile int currentPos = 0; 
 void loop(){
-  Serial.println("entry");
+  if (Serial.available() > 0){
+    incomingByte = Serial.read(); 
 
-  for(int i=0; i<320; i++){
-    byte val = 0;
-    if(i < 107)   val = 0b10000000; 
-    else if (i < 214) val = 0b00010000; 
-    else val = 0b00000010;
- 
-    for (int j = 0 ; j < 240; j++){
-      fb[j][i] = val; 
-    } 
+    Serial.print("I received: ");
+    Serial.println(incomingByte, DEC);
   }
   
-  Serial.println("Before for");
-  for(;;);
-  Serial.println("exit");
+  for (int k = 0; k < 210; k++){
+    for (int m = startPos; m < startPos + squareSize; m++){
+      fb[m][startPos+k-1] = RED;  
+    }
+    delay(50);
+    for (int i = startPos + k; i < squareSize + startPos +k; i++){
+        for (int j = startPos; j < squareSize + startPos; j++){
+            fb[j][i] = BLUE; 
+        }
+    } 
+  }
+}  
+
+void initMatrix(){
+  for(int i=0;i<320;i++){
+    for(int j=0;j<240;j++){
+      fb[j][i]= RED;
+    }
+  }
 }

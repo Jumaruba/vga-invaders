@@ -27,7 +27,7 @@ void setup(){
  
   REG_TC0_CMR0=0b00000000000010011100010000000000; // set channel mode register (see datasheet)
 
-  REG_TC0_RC0=100000000;    // counter period
+  REG_TC0_RC0=100000000;    // counter period (10 seconds)
   REG_TC0_RA0=30000000;     // PWM value
 
   // START THE COUNTER 
