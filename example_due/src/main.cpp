@@ -25,7 +25,7 @@ using namespace std;
 #define SQUARE_LINE   200
 #define DELAY         30 
 #define BULLET_LENGTH 6
-#define ALIENS_NUM 1
+#define ALIENS_NUM 6
 
 #define do20(x) x x x x x x x x x x x x x x x x x x x x
 #define do80(x) do20(x) do20(x) do20(x) do20(x)
@@ -36,7 +36,8 @@ inline int getNumNeighbors(int line, int col);
 inline byte getCellColor(int line, int col);
 inline void digitalWriteDirect(int pin, boolean val);
 
-void drawAlien(int row, int col);
+void drawAliens();
+void initAliens();
 void initMatrix();
 void drawSquare();
 void moveRight();
@@ -86,8 +87,9 @@ void setup()
 {
   Serial.begin(9600);
   initMatrix();
+  initAliens();
   drawSquare();
-  drawAlien(SQUARE_LINE -  100 ,startCol);
+  drawAliens();
 
   pinMode(VSYNC_PIN, OUTPUT); // vsync=3
   pinMode(HSYNC_PIN, OUTPUT); // hsync=2
@@ -149,10 +151,22 @@ void drawSquare() {
   }
 }
 
-void drawAlien(int row, int col) {
-  for (int i=row; i < row + SQUARE_SIZE; i++) {
-    for (int j=col; j < col + SQUARE_SIZE; j++) {
-      fb[i][j] = GREEN;
+void initAliens(){
+  int baseRow = SQUARE_LINE -  100;
+  int baseCol = startCol;
+  for(int i = 0 ; i < aliens; i++){
+    aliens[i].x = baseRow + (i > 0 ? ((i+1)*SQUARE_SIZE) : 0);
+    aliens[i].y = baseCol + (i >= ALIENS_NUM/2 ? SQUARE_SIZE : 0);
+  }
+}
+
+void drawAliens() {
+  for(int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++){
+    alien temp = aliens[alienIdx];
+    for (int i=temp.x; i < row + SQUARE_SIZE; i++) {
+      for (int j=temp.y; j < col + SQUARE_SIZE; j++) {
+        fb[i][j] = GREEN;
+      }
     }
   }
 }
