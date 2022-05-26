@@ -154,8 +154,11 @@ void drawSquare() {
 void initAliens(){
   int baseRow = SQUARE_LINE -  100;
   int baseCol = startCol;
-  for(int i = 0 ; i < aliens; i++){
-    aliens[i].x = baseRow + (i > 0 ? ((i+1)*SQUARE_SIZE) : 0);
+  //for even ALIENS_NUM
+  for(int i = 0, mult = 0 ; i < aliens; i++,mult++){
+    if(i == ALIENS_NUM/2)
+      mult = 0;
+    aliens[i].x = baseRow + (i > 0 ? (2*SQUARE_SIZE*mult) : 0);
     aliens[i].y = baseCol + (i >= ALIENS_NUM/2 ? SQUARE_SIZE : 0);
   }
 }
