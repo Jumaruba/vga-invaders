@@ -4,6 +4,8 @@ using namespace std;
 
 #define LINES 240
 #define COLS 320
+#define FIRST_COL 0
+#define LAST_COL 320
 
 #define RED 0b10000000
 #define GREEN 0b00010000
@@ -30,14 +32,17 @@ inline int getNumNeighbors(int line, int col);
 inline byte getCellColor(int line, int col);
 inline void digitalWriteDirect(int pin, boolean val);
 void initMatrix();
+void initSquare();
 void moveRight();
-void moveLeft(); 
+void moveLeft();
+
 
 volatile short line;
 volatile byte current_color = BLUE;
 byte fb[LINES][COLS];
 
-void TC0_Handler(){
+void TC0_Handler()
+{
   long dummy = REG_TC0_SR0;
 
   if (line < 480)
@@ -57,9 +62,11 @@ void TC0_Handler(){
     line = 0;
 }
 
-void setup(){
+void setup()
+{
   Serial.begin(9600);
   initMatrix();
+  initSquare();
 
   pinMode(VSYNC_PIN, OUTPUT); // vsync=3
   pinMode(HSYNC_PIN, OUTPUT); // hsync=2
@@ -85,21 +92,25 @@ void setup(){
   NVIC_EnableIRQ(TC0_IRQn);
 }
 
+int squareLine = 200;
 int squareSize = 10;
-int startPos = COLS / 2;
+int startCol = COLS / 2 - squareSize / 2;
 volatile byte incomingByte;
-volatile int currentPos = startPos; 
+volatile int currentCol = startCol;
 
 void loop()
 {
-  
-  if(digitalRead(RIGHT_PIN) == HIGH){
+
+  if (digitalRead(RIGHT_PIN) == HIGH)
+  {
     moveRight();
-  } else if (digitalRead(LEFT_PIN) == HIGH){
+  }
+  else if (digitalRead(LEFT_PIN) == HIGH)
+  {
     moveLeft();
   }
 
-  
+  /*
   for (int k = 0; k < 210; k++){
     for (int m = startPos; m < startPos + squareSize; m++){
       fb[m][startPos+k-1] = RED;
@@ -111,9 +122,11 @@ void loop()
         }
     }
   }
+  */
 }
 
-void initMatrix(){
+void initMatrix()
+{
   for (int i = 0; i < 320; i++)
   {
     for (int j = 0; j < 240; j++)
@@ -123,33 +136,71 @@ void initMatrix(){
   }
 }
 
-// TODO 
+void initSquare()
+{
+  for (int i = squareLine; i < squareLine + squareSize; i++) {
+    for (int j = startCol; j < startCol + squareSize; j++) {
+      fb[i][j] = BLUE;
+    }
+  }
+}
+
+void drawSquare() {
+  
+}
+
+// TODO
 void moveLeft() {
   Serial.write("Left");
 
-  currentPos--;
-  for (int i=currentPos; i < currentPos + squareSize; i++) {
-    for (int m = startPos; m < startPos + squareSize; m++){
-      fb[m][startPos+i-1] = RED;
-    }
-    for (int j=0; j < squareSize; j++) {
-      fb[i][j] = WHITE;
+  if(currentCol <= FIRST_COL){
+    return;
+  } 
+
+  // Clean the first column.
+  for (int i = squareLine; i < squareSize + squareLine; i++) {
+    fb[i][currentCol + squareSize] = RED;
+  }
+
+  currentCol--;
+
+  // Print the square.
+  for (int row = squareLine; row < squareLine + squareSize; row++) {
+    for (int col = currentCol; col < currentCol + squareSize; col++) {
+      fb[row][col] = BLUE;
     }
   }
+}
+
+// TODO
+void moveRight()
+{
+  Serial.write("right");
+/*
+  if(currentPos <= FIRST_COL ){
+    return;
+  } 
+
+  // Clean the first column.
+  for (int m = squareLine; m < squareLine + squareSize; m++) {
+    fb[m][currentPos] = RED;
+  }
+
+  currentPos--;
+  // Print the square.
+  for (int j = currentPos; j < squareSize; j++) {
+    fb[squareLine][j] = BLUE;
+  }*/ 
 
 }
 
 // TODO
-void moveRight(){
-  Serial.write("right");
+void shoot()
+{
 }
 
-// TODO 
-void shoot(){
-  
-}
-
-inline void digitalWriteDirect(int pin, boolean val){
+inline void digitalWriteDirect(int pin, boolean val)
+{
   if (val)
     g_APinDescription[pin].pPort->PIO_SODR = g_APinDescription[pin].ulPin;
   else
