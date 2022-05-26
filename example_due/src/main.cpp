@@ -30,6 +30,8 @@ inline int getNumNeighbors(int line, int col);
 inline byte getCellColor(int line, int col);
 inline void digitalWriteDirect(int pin, boolean val);
 void initMatrix();
+void moveRight();
+void moveLeft(); 
 
 volatile short line;
 volatile byte current_color = BLUE;
@@ -84,18 +86,21 @@ void setup(){
 }
 
 int squareSize = 10;
-int startPos = 100;
+int startPos = COLS / 2;
 volatile byte incomingByte;
-volatile int currentPos = 0;
+volatile int currentPos = startPos; 
+
 void loop()
 {
-
-  int val = digitalRead(54);
-  if (val == HIGH)
-  {
-    Serial.write("here");
+  
+  if(digitalRead(RIGHT_PIN) == HIGH){
+    moveRight();
+  } else if (digitalRead(LEFT_PIN) == HIGH){
+    moveLeft();
   }
-  /*
+
+  
+  for (int k = 0; k < 210; k++){
     for (int m = startPos; m < startPos + squareSize; m++){
       fb[m][startPos+k-1] = RED;
     }
@@ -105,18 +110,7 @@ void loop()
             fb[j][i] = BLUE;
         }
     }
-    */
-  // for (int k = 0; k < 210; k++){
-  //   for (int m = startPos; m < startPos + squareSize; m++){
-  //     fb[m][startPos+k-1] = RED;
-  //   }
-  //   delay(50);
-  //   for (int i = startPos + k; i < squareSize + startPos +k; i++){
-  //       for (int j = startPos; j < squareSize + startPos; j++){
-  //           fb[j][i] = BLUE;
-  //       }
-  //   }
-  // }
+  }
 }
 
 void initMatrix(){
@@ -129,14 +123,25 @@ void initMatrix(){
   }
 }
 
-// TODO
-void moveRight(){
+// TODO 
+void moveLeft() {
+  Serial.write("Left");
+
+  currentPos--;
+  for (int i=currentPos; i < currentPos + squareSize; i++) {
+    for (int m = startPos; m < startPos + squareSize; m++){
+      fb[m][startPos+i-1] = RED;
+    }
+    for (int j=0; j < squareSize; j++) {
+      fb[i][j] = WHITE;
+    }
+  }
 
 }
 
-// TODO 
-void moveLeft(){
-
+// TODO
+void moveRight(){
+  Serial.write("right");
 }
 
 // TODO 
