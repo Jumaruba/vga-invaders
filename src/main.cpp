@@ -5,20 +5,13 @@
 
 using namespace std;
 
-
 void setup(){
   Serial.begin(9600);
   initMatrix();
   setupClock(); 
 }
 
-
 void loop()
 {
   moveWithoutInput();
 }
-
-
-
-
-

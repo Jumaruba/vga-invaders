@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include "macros.h"
-#include "common.h"
 
 using namespace std;
 

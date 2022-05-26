@@ -1,6 +1,7 @@
 #include "../include/signal.h"
 
 volatile short line;
+byte fb[LINES][COLS];
 
 void TC0_Handler() {
 
