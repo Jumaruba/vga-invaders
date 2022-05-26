@@ -2,26 +2,30 @@
 
 using namespace std;
 
-#define LINES 240
-#define COLS 320
-#define FIRST_COL 0
-#define LAST_COL 320
-
-#define RED 0b10000000
+#define RED   0b10000000
 #define GREEN 0b00010000
-#define BLUE 0b00000010
+#define BLUE  0b00000010
+#define WHITE 0b11111111
 #define BLACK 0b00000000
 
-#define VSYNC_PIN 3
-#define HSYNC_PIN 2
-#define RED_PIN 11
-#define GREEN_PIN 14
-#define BLUE_PIN 26
-#define LEFT_PIN 54
-#define MIDDLE_PIN 55
-#define RIGHT_PIN 56
+#define VSYNC_PIN  3
+#define HSYNC_PIN  2
+#define RED_PIN    11
+#define GREEN_PIN  14
+#define BLUE_PIN   26
+#define LEFT_PIN   54
+#define SHOOT_PIN  55
+#define RIGHT_PIN  56
 
-#define SQUARE_SIZE = 10;
+#define LINES         240
+#define COLS          320
+#define FIRST_COL     0
+#define SQUARE_SIZE   10
+#define LAST_COL      320 - SQUARE_SIZE
+#define SQUARE_LINE   200
+#define DELAY         30 
+#define BULLET_LENGTH 6
+#define ALIENS_NUM 1
 
 #define do20(x) x x x x x x x x x x x x x x x x x x x x
 #define do80(x) do20(x) do20(x) do20(x) do20(x)
@@ -31,15 +35,27 @@ using namespace std;
 inline int getNumNeighbors(int line, int col);
 inline byte getCellColor(int line, int col);
 inline void digitalWriteDirect(int pin, boolean val);
+
+void drawAlien(int row, int col);
 void initMatrix();
-void initSquare();
+void drawSquare();
 void moveRight();
 void moveLeft();
-
+void shoot();
 
 volatile short line;
 volatile byte current_color = BLUE;
+volatile int currentBulletLine = SQUARE_LINE;  
+volatile int currentBulletCol; 
+
+
 byte fb[LINES][COLS];
+struct alien {
+  byte x;
+  byte y;
+};
+
+volatile alien aliens[ALIENS_NUM];
 
 void TC0_Handler()
 {
@@ -62,11 +78,16 @@ void TC0_Handler()
     line = 0;
 }
 
+int startCol = COLS / 2 - SQUARE_SIZE / 2;
+volatile byte incomingByte;
+volatile int currentCol = startCol;
+
 void setup()
 {
   Serial.begin(9600);
   initMatrix();
-  initSquare();
+  drawSquare();
+  drawAlien(SQUARE_LINE -  100 ,startCol);
 
   pinMode(VSYNC_PIN, OUTPUT); // vsync=3
   pinMode(HSYNC_PIN, OUTPUT); // hsync=2
@@ -74,7 +95,7 @@ void setup()
   pinMode(BLUE_PIN, OUTPUT);  // Blue
   pinMode(GREEN_PIN, OUTPUT); // Green
   pinMode(LEFT_PIN, INPUT);   // Left
-  pinMode(MIDDLE_PIN, INPUT); // Middle
+  pinMode(SHOOT_PIN, INPUT); // Middle
   pinMode(RIGHT_PIN, INPUT);  // Right
 
   REG_PIOD_OWER = 0xff;
@@ -92,15 +113,10 @@ void setup()
   NVIC_EnableIRQ(TC0_IRQn);
 }
 
-int squareLine = 200;
-int squareSize = 10;
-int startCol = COLS / 2 - squareSize / 2;
-volatile byte incomingByte;
-volatile int currentCol = startCol;
+
 
 void loop()
 {
-
   if (digitalRead(RIGHT_PIN) == HIGH)
   {
     moveRight();
@@ -110,19 +126,8 @@ void loop()
     moveLeft();
   }
 
-  /*
-  for (int k = 0; k < 210; k++){
-    for (int m = startPos; m < startPos + squareSize; m++){
-      fb[m][startPos+k-1] = RED;
-    }
-    delay(50);
-    for (int i = startPos + k; i < squareSize + startPos +k; i++){
-        for (int j = startPos; j < squareSize + startPos; j++){
-            fb[j][i] = BLUE;
-        }
-    }
-  }
-  */
+  shoot();
+  delay(DELAY);
 }
 
 void initMatrix()
@@ -131,72 +136,89 @@ void initMatrix()
   {
     for (int j = 0; j < 240; j++)
     {
-      fb[j][i] = RED;
-    }
-  }
-}
-
-void initSquare()
-{
-  for (int i = squareLine; i < squareLine + squareSize; i++) {
-    for (int j = startCol; j < startCol + squareSize; j++) {
-      fb[i][j] = BLUE;
+      fb[j][i] = WHITE;
     }
   }
 }
 
 void drawSquare() {
-  
-}
-
-// TODO
-void moveLeft() {
-  Serial.write("Left");
-
-  if(currentCol <= FIRST_COL){
-    return;
-  } 
-
-  // Clean the first column.
-  for (int i = squareLine; i < squareSize + squareLine; i++) {
-    fb[i][currentCol + squareSize] = RED;
-  }
-
-  currentCol--;
-
-  // Print the square.
-  for (int row = squareLine; row < squareLine + squareSize; row++) {
-    for (int col = currentCol; col < currentCol + squareSize; col++) {
+  for (int row = SQUARE_LINE; row < SQUARE_LINE + SQUARE_SIZE; row++) {
+    for (int col = currentCol; col < currentCol + SQUARE_SIZE; col++) {
       fb[row][col] = BLUE;
     }
   }
 }
 
-// TODO
-void moveRight()
-{
-  Serial.write("right");
+void drawAlien(int row, int col) {
+  for (int i=row; i < row + SQUARE_SIZE; i++) {
+    for (int j=col; j < col + SQUARE_SIZE; j++) {
+      fb[i][j] = GREEN;
+    }
+  }
+}
+
 /*
-  if(currentPos <= FIRST_COL ){
+void moveAliens() {
+  for(int i=0; i < something; i++) {
+    moveAlien(i);
+  }
+}
+*/
+
+void drawBullet(){
+  for (int i = currentBulletLine; i < currentBulletLine + BULLET_LENGTH; i++){
+    fb[i][currentBulletCol] = GREEN;   
+  }
+}
+
+void moveLeft() {
+  if(currentCol <= FIRST_COL){
     return;
   } 
 
   // Clean the first column.
-  for (int m = squareLine; m < squareLine + squareSize; m++) {
-    fb[m][currentPos] = RED;
+  for (int i = SQUARE_LINE; i < SQUARE_SIZE + SQUARE_LINE; i++) {
+    fb[i][currentCol + SQUARE_SIZE] = WHITE;
   }
 
-  currentPos--;
-  // Print the square.
-  for (int j = currentPos; j < squareSize; j++) {
-    fb[squareLine][j] = BLUE;
-  }*/ 
+  currentCol--;
 
+  // Print the square.
+  drawSquare();
 }
 
-// TODO
-void shoot()
+void moveRight()
 {
+  if(currentCol >= LAST_COL){
+    return;
+  } 
+
+  // Clean the first column.
+  for (int i = SQUARE_LINE; i < SQUARE_SIZE + SQUARE_LINE; i++) {
+    fb[i][currentCol] = WHITE;
+  }
+
+  currentCol++;
+
+  // Print the square.
+  for (int row = SQUARE_LINE; row < SQUARE_LINE + SQUARE_SIZE; row++) {
+    for (int col = currentCol; col < currentCol + SQUARE_SIZE; col++) {
+      fb[row][col] = BLUE;
+    }
+  }
+}
+
+void shoot(){
+  // TODO: handle multiple shoots
+  if (digitalRead(SHOOT_PIN) == HIGH){
+    Serial.write("SHOOT");
+    currentBulletCol = currentCol; 
+    currentBulletLine = SQUARE_LINE + 1; 
+  } 
+  if (currentBulletCol < BULLET_LENGTH) {
+    drawBullet(); 
+  }
+   
 }
 
 inline void digitalWriteDirect(int pin, boolean val)
