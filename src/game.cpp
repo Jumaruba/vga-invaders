@@ -1,5 +1,11 @@
 #include "../include/game.h"
 
+int squareSize = 10;
+int startPos = 100;
+volatile int currentPos = 0;
+volatile byte incomingByte; 
+byte fb[LINES][COLS];
+
 void initMatrix()
 {
     for (int i = 0; i < 320; i++)

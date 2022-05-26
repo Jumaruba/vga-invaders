@@ -1,7 +1,8 @@
 #include "../include/signal.h"
 
+volatile short line;
+
 void TC0_Handler() {
-    long dummy = REG_TC0_SR0;
 
     if (line < 480)
     {

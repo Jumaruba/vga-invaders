@@ -1,3 +1,5 @@
+#ifndef MACROS_H 
+#define MACROS_H 
 
 #define LINES 240
 #define COLS 320
@@ -24,3 +26,4 @@
 #define do320(x) do80(x) do80(x) do80(x) do80(x)
 #define MNOP(x) asm volatile(" .rept " #x "\n\t nop \n\t .endr \n\t")
 
+#endif 

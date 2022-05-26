@@ -16,8 +16,6 @@ void setup(){
 void loop()
 {
   moveWithoutInput();
-
-
 }
 
 
