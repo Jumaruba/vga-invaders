@@ -45,7 +45,7 @@ void shoot();
 
 volatile short line;
 volatile byte current_color = BLUE;
-volatile int currentBulletLine = SQUARE_LINE;  
+volatile int currentBulletLine = 0;  
 volatile int currentBulletCol; 
 
 
@@ -166,9 +166,10 @@ void moveAliens() {
 */
 
 void drawBullet(){
-  for (int i = currentBulletLine; i < currentBulletLine + BULLET_LENGTH; i++){
+  for (int i = currentBulletLine; i > currentBulletLine - BULLET_LENGTH; i--){
     fb[i][currentBulletCol] = GREEN;   
   }
+  fb[currentBulletLine+1][currentBulletCol] = WHITE; 
 }
 
 void moveLeft() {
@@ -211,12 +212,16 @@ void moveRight()
 void shoot(){
   // TODO: handle multiple shoots
   if (digitalRead(SHOOT_PIN) == HIGH){
-    Serial.write("SHOOT");
     currentBulletCol = currentCol; 
-    currentBulletLine = SQUARE_LINE + 1; 
+    currentBulletLine = SQUARE_LINE - 1; 
   } 
-  if (currentBulletCol < BULLET_LENGTH) {
+
+  // Verify top screen limit
+  if (currentBulletLine > BULLET_LENGTH) {
     drawBullet(); 
+    currentBulletLine--;
+  } else {
+      // TODO: apagar tiro
   }
    
 }
