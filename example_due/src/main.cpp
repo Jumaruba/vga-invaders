@@ -12,6 +12,7 @@ void moveRight();
 void moveLeft();
 void shoot();
 inline void deleteShoot(int line);
+inline boolean checkBulletCollision();
 
 volatile short line;
 volatile byte current_color = BLUE;
@@ -23,6 +24,7 @@ struct alien
 {
   int row;
   int col;
+  boolean isAlive = true;
 };
 
 volatile alien aliens[ALIENS_NUM];
@@ -152,6 +154,8 @@ void drawAliens()
 
   for (int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++)
   { 
+    if (!aliens[alienIdx].isAlive) continue;
+
     // Clean previous line
     for (int i = aliens[alienIdx].row; i < SQUARE_SIZE + aliens[alienIdx].row; i++)
     {
@@ -175,9 +179,9 @@ void drawBullet()
 {
   for (int i = currentBulletLine; i > currentBulletLine - BULLET_LENGTH; i--)
   {
-    fb[i][currentBulletCol] = RED;
+    fb[i][currentBulletCol + SQUARE_SIZE / 2] = RED;
   }
-  fb[currentBulletLine + 1][currentBulletCol] = WHITE;
+  fb[currentBulletLine + 1][currentBulletCol + SQUARE_SIZE / 2] = WHITE;
 }
 
 void moveLeft()
@@ -237,12 +241,40 @@ void shoot()
   {
     drawBullet();
     currentBulletLine--;
+    if(checkBulletCollision()){
+      deleteShoot(currentBulletLine);
+      currentBulletLine = BULLET_INACTIVE_LINE;
+    }
   }
   else
   {
     deleteShoot(currentBulletLine);
     currentBulletLine = BULLET_INACTIVE_LINE;
   }
+}
+
+
+inline boolean checkBulletCollision()
+{
+  for(int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++)
+  {
+    if(!aliens[alienIdx].isAlive) continue;
+    for(int temp_bulletLine = currentBulletLine; temp_bulletLine > currentBulletLine - BULLET_LENGTH;temp_bulletLine--)
+    {
+      
+      // Checks if bullet is inside the aliens bounds
+      if( temp_bulletLine     >= aliens[alienIdx].row 
+          && temp_bulletLine  <= (aliens[alienIdx].row + SQUARE_SIZE)
+          && currentBulletCol >= aliens[alienIdx].col
+          && currentBulletCol <= (aliens[alienIdx].col + SQUARE_SIZE)
+        )
+        {
+          aliens[alienIdx].isAlive = false;
+          return true;
+        }   
+    } 
+  }
+  return false;
 }
 
 inline void deleteShoot(int line)
