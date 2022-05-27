@@ -21,8 +21,8 @@ volatile int currentBulletCol;
 byte fb[LINES][COLS];
 struct alien
 {
-  byte row;
-  byte col;
+  int row;
+  int col;
 };
 
 volatile alien aliens[ALIENS_NUM];
