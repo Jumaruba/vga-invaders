@@ -1,59 +1,28 @@
 #include <Arduino.h>
+#include "../include/macros.h"
 
-using namespace std;
-
-#define RED   0b10000000
-#define GREEN 0b00010000
-#define BLUE  0b00000010
-#define WHITE 0b11111111
-#define BLACK 0b00000000
-
-#define VSYNC_PIN  3
-#define HSYNC_PIN  2
-#define RED_PIN    11
-#define GREEN_PIN  14
-#define BLUE_PIN   26
-#define LEFT_PIN   54
-#define SHOOT_PIN  55
-#define RIGHT_PIN  56
-
-#define LINES         240
-#define COLS          320
-#define FIRST_COL     0
-#define SQUARE_SIZE   10
-#define LAST_COL      320 - SQUARE_SIZE
-#define SQUARE_LINE   200
-#define DELAY         30 
-#define BULLET_LENGTH 6
-#define ALIENS_NUM 6
-
-#define do20(x) x x x x x x x x x x x x x x x x x x x x
-#define do80(x) do20(x) do20(x) do20(x) do20(x)
-#define do320(x) do80(x) do80(x) do80(x) do80(x)
-#define MNOP(x) asm volatile(" .rept " #x "\n\t nop \n\t .endr \n\t")
-
-inline int getNumNeighbors(int line, int col);
-inline byte getCellColor(int line, int col);
 inline void digitalWriteDirect(int pin, boolean val);
 
 void drawAliens();
 void initAliens();
+void moveAliens();
 void initMatrix();
 void drawSquare();
 void moveRight();
 void moveLeft();
 void shoot();
+inline void deleteShoot(int line);
 
 volatile short line;
 volatile byte current_color = BLUE;
-volatile int currentBulletLine = 0;  
-volatile int currentBulletCol; 
-
+volatile int currentBulletLine = BULLET_INACTIVE_LINE;
+volatile int currentBulletCol;
 
 byte fb[LINES][COLS];
-struct alien {
-  byte x;
-  byte y;
+struct alien
+{
+  byte row;
+  byte col;
 };
 
 volatile alien aliens[ALIENS_NUM];
@@ -82,6 +51,7 @@ void TC0_Handler()
 int startCol = COLS / 2 - SQUARE_SIZE / 2;
 volatile byte incomingByte;
 volatile int currentCol = startCol;
+boolean isMoveLeft = false; 
 
 void setup()
 {
@@ -89,7 +59,6 @@ void setup()
   initMatrix();
   initAliens();
   drawSquare();
-  drawAliens();
 
   pinMode(VSYNC_PIN, OUTPUT); // vsync=3
   pinMode(HSYNC_PIN, OUTPUT); // hsync=2
@@ -97,7 +66,7 @@ void setup()
   pinMode(BLUE_PIN, OUTPUT);  // Blue
   pinMode(GREEN_PIN, OUTPUT); // Green
   pinMode(LEFT_PIN, INPUT);   // Left
-  pinMode(SHOOT_PIN, INPUT); // Middle
+  pinMode(SHOOT_PIN, INPUT);  // Middle
   pinMode(RIGHT_PIN, INPUT);  // Right
 
   REG_PIOD_OWER = 0xff;
@@ -115,8 +84,6 @@ void setup()
   NVIC_EnableIRQ(TC0_IRQn);
 }
 
-
-
 void loop()
 {
   if (digitalRead(RIGHT_PIN) == HIGH)
@@ -127,6 +94,8 @@ void loop()
   {
     moveLeft();
   }
+
+  drawAliens();
 
   shoot();
   delay(DELAY);
@@ -143,59 +112,84 @@ void initMatrix()
   }
 }
 
-void drawSquare() {
-  for (int row = SQUARE_LINE; row < SQUARE_LINE + SQUARE_SIZE; row++) {
-    for (int col = currentCol; col < currentCol + SQUARE_SIZE; col++) {
+void drawSquare()
+{
+  for (int row = SQUARE_LINE; row < SQUARE_LINE + SQUARE_SIZE; row++)
+  {
+    for (int col = currentCol; col < currentCol + SQUARE_SIZE; col++)
+    {
       fb[row][col] = BLUE;
     }
   }
 }
 
-void initAliens(){
-  int baseRow = SQUARE_LINE -  100;
-  int baseCol = startCol;
-  //for even ALIENS_NUM
-  for(int i = 0, mult = 0 ; i < aliens; i++,mult++){
-    if(i == ALIENS_NUM/2)
+void initAliens()
+{
+  int baseRow = 1;
+  int baseCol = 50;
+  // for even ALIENS_NUM
+  for (int i = 0, mult = 0; i < ALIENS_NUM; i++, mult++)
+  {
+    if (i == ALIENS_NUM / 2)
       mult = 0;
-    aliens[i].x = baseRow + (i > 0 ? (2*SQUARE_SIZE*mult) : 0);
-    aliens[i].y = baseCol + (i >= ALIENS_NUM/2 ? SQUARE_SIZE : 0);
+    aliens[i].row = baseRow + (i > 0 ? (SQUARE_SIZE_DOUBLE * mult) : 0);
+    aliens[i].col = baseCol + (i >= ALIENS_NUM / 2 ? SQUARE_SIZE_DOUBLE : 0);
   }
 }
 
-void drawAliens() {
-  for(int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++){
-    alien temp = aliens[alienIdx];
-    for (int i=temp.x; i < row + SQUARE_SIZE; i++) {
-      for (int j=temp.y; j < col + SQUARE_SIZE; j++) {
-        fb[i][j] = GREEN;
+void drawAliens()
+{
+  if (!isMoveLeft && aliens[ALIENS_NUM -1].col >= ALIEN_MAXY){
+    isMoveLeft = true;
+    Serial.write("MOVE LEFT");
+  } else if (aliens[0].col <= 1 && isMoveLeft) {
+    isMoveLeft = false; 
+    Serial.write("MOVE RIGHT");
+  }
+
+  int move = isMoveLeft ? -1 : 1;
+  int deletePosCol = isMoveLeft ? SQUARE_SIZE : 0;
+
+  for (int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++)
+  { 
+    // Clean previous line
+    for (int i = aliens[alienIdx].row; i < SQUARE_SIZE + aliens[alienIdx].row; i++)
+    {
+      fb[i][aliens[alienIdx].col + deletePosCol] = WHITE;
+    }
+
+    aliens[alienIdx].col += move;
+
+    // Draw next column
+    for (int i = aliens[alienIdx].col; i < aliens[alienIdx].col + SQUARE_SIZE; i++)
+    {
+      for (int j = aliens[alienIdx].row; j < aliens[alienIdx].row + SQUARE_SIZE; j++)
+      {
+        fb[j][i] = GREEN;
       }
     }
   }
 }
 
-/*
-void moveAliens() {
-  for(int i=0; i < something; i++) {
-    moveAlien(i);
+void drawBullet()
+{
+  for (int i = currentBulletLine; i > currentBulletLine - BULLET_LENGTH; i--)
+  {
+    fb[i][currentBulletCol] = RED;
   }
-}
-*/
-
-void drawBullet(){
-  for (int i = currentBulletLine; i > currentBulletLine - BULLET_LENGTH; i--){
-    fb[i][currentBulletCol] = GREEN;   
-  }
-  fb[currentBulletLine+1][currentBulletCol] = WHITE; 
+  fb[currentBulletLine + 1][currentBulletCol] = WHITE;
 }
 
-void moveLeft() {
-  if(currentCol <= FIRST_COL){
+void moveLeft()
+{
+  if (currentCol <= FIRST_COL)
+  {
     return;
-  } 
+  }
 
   // Clean the first column.
-  for (int i = SQUARE_LINE; i < SQUARE_SIZE + SQUARE_LINE; i++) {
+  for (int i = SQUARE_LINE; i < SQUARE_SIZE + SQUARE_LINE; i++)
+  {
     fb[i][currentCol + SQUARE_SIZE] = WHITE;
   }
 
@@ -207,40 +201,56 @@ void moveLeft() {
 
 void moveRight()
 {
-  if(currentCol >= LAST_COL){
+  if (currentCol >= LAST_COL)
+  {
     return;
-  } 
+  }
 
   // Clean the first column.
-  for (int i = SQUARE_LINE; i < SQUARE_SIZE + SQUARE_LINE; i++) {
+  for (int i = SQUARE_LINE; i < SQUARE_SIZE + SQUARE_LINE; i++)
+  {
     fb[i][currentCol] = WHITE;
   }
 
   currentCol++;
 
   // Print the square.
-  for (int row = SQUARE_LINE; row < SQUARE_LINE + SQUARE_SIZE; row++) {
-    for (int col = currentCol; col < currentCol + SQUARE_SIZE; col++) {
+  for (int row = SQUARE_LINE; row < SQUARE_LINE + SQUARE_SIZE; row++)
+  {
+    for (int col = currentCol; col < currentCol + SQUARE_SIZE; col++)
+    {
       fb[row][col] = BLUE;
     }
   }
 }
 
-void shoot(){
-  // TODO: handle multiple shoots
-  if (digitalRead(SHOOT_PIN) == HIGH){
-    currentBulletCol = currentCol; 
-    currentBulletLine = SQUARE_LINE - 1; 
-  } 
+void shoot()
+{
+  if (currentBulletLine == BULLET_INACTIVE_LINE && digitalRead(SHOOT_PIN) == HIGH)
+  {
+    currentBulletCol = currentCol;
+    currentBulletLine = BULLET_START_LINE;
+  }
 
   // Verify top screen limit
-  if (currentBulletLine > BULLET_LENGTH) {
-    drawBullet(); 
+  if (currentBulletLine > BULLET_LENGTH)
+  {
+    drawBullet();
     currentBulletLine--;
-  } else {
-      // TODO: apagar tiro
   }
-   
+  else
+  {
+    deleteShoot(currentBulletLine);
+    currentBulletLine = BULLET_INACTIVE_LINE;
+  }
+}
+
+inline void deleteShoot(int line)
+{
+  for (int i = line + 1; i >= line - BULLET_LENGTH; i--)
+  {
+    fb[i][currentBulletCol] = WHITE;
+  }
 }
 
 inline void digitalWriteDirect(int pin, boolean val)
