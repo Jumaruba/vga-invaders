@@ -24,6 +24,8 @@
 #define DELAY         30 
 #define BULLET_LENGTH 6
 #define ALIENS_NUM 4
+#define ALIENS_PER_LINE ALIENS_NUM / 2
+#define ALIEN_MINX 1
 #define ALIEN_MINY 50
 #define ALIEN_MAXY 250
 #define SQUARE_SIZE_DOUBLE SQUARE_SIZE*2
