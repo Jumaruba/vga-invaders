@@ -2,35 +2,31 @@
 #define GAME_H
 
 #include <Arduino.h>
-#include "macros.h"
+
 #include "alien.h"
+#include "macros.h"
 
-using namespace std; 
+using namespace std;
 
+// INIT ==================================
 void initMatrix();
 
 void initAliens();
 
-void drawSquare();
+// DRAW ==================================
+void drawShip();
 
 void drawBullet();
 
+// CLEAN =================================
+void cleanShipRight();
+
+void cleanShipLeft();
+
 void deleteShoot(int line);
 
-boolean checkBulletCollision();
 
-/**
- * TASKS:
- * - macro cycle:
- *
- * - draw aliens; time:
- * - draw square; time:
- * - draw bullet; time:
- *
- *
- * - left button
- * - right button
- * - center button
- */
+// OTHERS ===============================
+boolean checkBulletCollision();
 
 #endif

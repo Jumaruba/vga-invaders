@@ -1,25 +1,22 @@
 #include "../include/tasks.h"
+
 #include "../include/alien.h"
 #include "../include/game.h"
 
 extern volatile int currentCol;
-extern byte fb[LINES][COLS];   
+extern byte fb[LINES][COLS];
 volatile int colMove = 0;
 volatile boolean isMoveLeft = false;
-extern volatile int currentBulletLine; 
+extern volatile int currentBulletLine;
 extern volatile int currentBulletCol;
-extern volatile alien aliens[ALIENS_NUM]; 
+extern volatile alien aliens[ALIENS_NUM];
 
 void taskRight() {
-    if (digitalRead(RIGHT_PIN) && currentCol < LAST_COL) {
-        colMove++;
-    }
+    colMove += digitalRead(RIGHT_PIN) && currentCol < LAST_COL;
 }
 
 void taskLeft() {
-    if (digitalRead(LEFT_PIN) && currentCol > FIRST_COL) {
-        colMove--;
-    }
+    colMove -= digitalRead(LEFT_PIN) && currentCol > FIRST_COL ? 1 : 0;
 }
 
 void taskMiddle() {
@@ -70,33 +67,12 @@ void taskDrawAliens() {
     }
 }
 
-void taskDrawPlayer() {
+void taskDrawShip() {
     int newCol = currentCol + colMove;
-
     if (newCol != currentCol) {
-        // Clean previous columns
-        if (newCol > currentCol) {
-            for (int col = currentCol; col < newCol; col++) {
-                for (int row = SHIP_START_ROW; row < SQUARE_SIZE + SHIP_START_ROW; row++) {
-                    fb[row][col] = WHITE;
-                }
-            }
-        } else {
-            for (int col = currentCol; col >= newCol; col--) {
-                for (int row = SHIP_START_ROW; row < SQUARE_SIZE + SHIP_START_ROW; row++) {
-                    fb[row][col + SQUARE_SIZE] = WHITE;
-                }
-            }
-        }
-
-        currentCol = newCol;
-
-        // Print the square.
-        for (int row = SHIP_START_ROW; row < SHIP_START_ROW + SQUARE_SIZE; row++) {
-            for (int col = currentCol; col < currentCol + SQUARE_SIZE; col++) {
-                fb[row][col] = BLUE;
-            }
-        }
+        newCol > currentCol ? cleanShipLeft() : cleanShipRight();  // Clean the column.
+        currentCol = newCol;                                       // Update the position.
+        drawShip();
         colMove = 0;
     }
 }

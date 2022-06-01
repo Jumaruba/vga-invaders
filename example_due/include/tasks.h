@@ -17,6 +17,6 @@ void taskDrawBullet();
 
 void taskDrawAliens();
 
-void taskDrawPlayer();
+void taskDrawShip();
 
 #endif

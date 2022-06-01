@@ -4,7 +4,7 @@
 
 int startCol = COLS / 2 - SQUARE_SIZE / 2;
 
-extern byte fb[LINES][COLS];    // Code matrix 
+extern byte fb[LINES][COLS];  // Code matrix
 volatile alien aliens[ALIENS_NUM];
 volatile int currentCol = startCol;
 volatile int currentBulletLine = BULLET_INACTIVE_LINE;
@@ -19,21 +19,23 @@ void initMatrix() {
 }
 
 void initAliens() {
-    // For even number of aliens. 
+    // For even number of aliens.
     for (int i = 0, mult = 0; i < ALIENS_NUM; i++, mult++) {
-        mult = i == ALIENS_PER_LINE ? 0: mult; 
+        mult = i == ALIENS_PER_LINE ? 0 : mult;
         aliens[i].row = ALIEN_MINX + (i != 0 ? (SQUARE_SIZE_DOUBLE * mult) : 0);
         aliens[i].col = ALIEN_MINY + (i >= ALIENS_PER_LINE ? SQUARE_SIZE_DOUBLE : 0);
     }
 }
 
-void drawSquare() {
+// DRAWS ==================================================
+
+void drawShip() {
     for (int row = SHIP_START_ROW; row < SHIP_END_ROW; row++) {
         for (int col = currentCol; col < currentCol + SQUARE_SIZE; col++) {
             fb[row][col] = BLUE;
         }
     }
-} 
+}
 
 void drawBullet() {
     for (int i = currentBulletLine; i > currentBulletLine - BULLET_LENGTH; i--) {
@@ -41,6 +43,20 @@ void drawBullet() {
     }
     fb[currentBulletLine + 1][currentBulletCol + SQUARE_SIZE / 2] = WHITE;
 }
+
+// CLEANS =============================================================
+
+void cleanShipRight() {
+    for (int row = SHIP_START_ROW; row < SHIP_END_ROW; row++) {
+        fb[row][currentCol + SQUARE_SIZE] = WHITE;
+    }
+}
+
+void cleanShipLeft() {
+    for (int row = SHIP_START_ROW; row < SHIP_END_ROW; row++) {
+        fb[row][currentCol] = WHITE;
+    }
+} 
 
 void deleteShoot(int line) {
     for (int i = line + 1; i >= line - BULLET_LENGTH; i--) {

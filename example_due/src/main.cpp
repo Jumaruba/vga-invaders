@@ -11,21 +11,22 @@ void setup() {
     initAliens();
     delay(100);  // TODO search it more
     setupClock();
-    drawSquare();
-
+    drawShip();
 }
 
-void loop() { 
-    long int t1 = micros();
+void loop() {
     taskRight();
+    delay(20);
+    taskLeft();
+    delay(20); 
+
+    long int t1 = micros();
+    taskDrawShip();
     long int t2 = micros();
     Serial.print("Time taken: ");
     Serial.print(t2 - t1);
     Serial.print(" microseconds");
-    delay(20);
-    taskLeft();
-    delay(20);
-    taskDrawPlayer();
+
     delay(20);
     taskDrawAliens();
     delay(20);
