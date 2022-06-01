@@ -3,6 +3,19 @@
 
 inline void digitalWriteDirect(int pin, boolean val);
 
+/**
+ * TASKS:
+ * - macro cycle:
+ *
+ * - draw aliens; time:
+ * - draw square; time:
+ * - draw bullet; time:
+ *
+ *
+ * - left button
+ * - right button
+ * - center button
+ */
 void drawAliens();
 void initAliens();
 void moveAliens();
@@ -53,7 +66,7 @@ void TC0_Handler()
 int startCol = COLS / 2 - SQUARE_SIZE / 2;
 volatile byte incomingByte;
 volatile int currentCol = startCol;
-boolean isMoveLeft = false; 
+boolean isMoveLeft = false;
 
 void setup()
 {
@@ -86,21 +99,119 @@ void setup()
   NVIC_EnableIRQ(TC0_IRQn);
 }
 
+volatile int colMove = 0;
+void taskRight()
+{
+  if (digitalRead(RIGHT_PIN) && currentCol < LAST_COL)
+  {
+    colMove++;
+  }
+}
+
+void taskLeft()
+{
+  if (digitalRead(LEFT_PIN) && currentCol > FIRST_COL) {
+    colMove--;
+  }
+}
+
+void taskMiddle()
+{
+}
+
+void taskDrawBullet()
+{
+}
+
+void taskDrawAliens()
+{
+  if (!isMoveLeft && aliens[ALIENS_NUM - 1].col >= ALIEN_MAXY) {
+    isMoveLeft = true;
+  }
+  else if (aliens[0].col <= 1 && isMoveLeft) {
+    isMoveLeft = false;
+  }
+
+  int move = isMoveLeft ? -1 : 1;
+  int deletePosCol = isMoveLeft ? SQUARE_SIZE : 0;
+
+  for (int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++) {
+    if (!aliens[alienIdx].isAlive)
+      continue;
+
+    // Clean previous line
+    for (int i = aliens[alienIdx].row; i < SQUARE_SIZE + aliens[alienIdx].row; i++) {
+      fb[i][aliens[alienIdx].col + deletePosCol] = WHITE;
+    }
+
+    aliens[alienIdx].col += move;
+
+    // Draw next column
+    for (int i = aliens[alienIdx].col; i < aliens[alienIdx].col + SQUARE_SIZE; i++) {
+      for (int j = aliens[alienIdx].row; j < aliens[alienIdx].row + SQUARE_SIZE; j++) {
+        fb[j][i] = GREEN;
+      }
+    }
+  }
+}
+
+void taskDrawPlayer() {
+  int newCol = currentCol + colMove;
+
+  if (newCol != currentCol)
+  {
+    // Clean previous columns
+    if (newCol > currentCol) { 
+
+      for (int col = currentCol; col < newCol; col++) {
+        for (int row = SQUARE_LINE; row < SQUARE_SIZE + SQUARE_LINE; row++) {
+          fb[row][col] = WHITE;
+        }
+      }
+    }
+    else {
+      for (int col = currentCol; col >= newCol; col--){
+        for (int row = SQUARE_LINE; row < SQUARE_SIZE + SQUARE_LINE; row++) {
+          fb[row][col + SQUARE_SIZE] = WHITE;
+        }
+      }
+    }
+
+    currentCol = newCol;
+
+    // Print the square.
+    for (int row = SQUARE_LINE; row < SQUARE_LINE + SQUARE_SIZE; row++)
+    {
+      for (int col = currentCol; col < currentCol + SQUARE_SIZE; col++)
+      {
+        fb[row][col] = BLUE;
+      }
+    }
+    colMove = 0;
+  }
+}
+
 void loop()
 {
-  if (digitalRead(RIGHT_PIN) == HIGH)
-  {
-    moveRight();
-  }
-  else if (digitalRead(LEFT_PIN) == HIGH)
-  {
-    moveLeft();
-  }
+  taskRight();
+  delay(100);
+  taskLeft();
+  delay(100);
+  taskDrawPlayer();
+  delay(100);
+  // if (digitalRead(RIGHT_PIN) == HIGH)
+  // {
+  //   moveRight();
+  // }
+  // else if (digitalRead(LEFT_PIN) == HIGH)
+  // {
+  //   moveLeft();
+  // }
 
-  drawAliens();
+  // drawAliens();
 
-  shoot();
-  delay(DELAY);
+  // shoot();
+  // delay(DELAY);
 }
 
 void initMatrix()
@@ -141,38 +252,6 @@ void initAliens()
 
 void drawAliens()
 {
-  if (!isMoveLeft && aliens[ALIENS_NUM -1].col >= ALIEN_MAXY){
-    isMoveLeft = true;
-    Serial.write("MOVE LEFT");
-  } else if (aliens[0].col <= 1 && isMoveLeft) {
-    isMoveLeft = false; 
-    Serial.write("MOVE RIGHT");
-  }
-
-  int move = isMoveLeft ? -1 : 1;
-  int deletePosCol = isMoveLeft ? SQUARE_SIZE : 0;
-
-  for (int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++)
-  { 
-    if (!aliens[alienIdx].isAlive) continue;
-
-    // Clean previous line
-    for (int i = aliens[alienIdx].row; i < SQUARE_SIZE + aliens[alienIdx].row; i++)
-    {
-      fb[i][aliens[alienIdx].col + deletePosCol] = WHITE;
-    }
-
-    aliens[alienIdx].col += move;
-
-    // Draw next column
-    for (int i = aliens[alienIdx].col; i < aliens[alienIdx].col + SQUARE_SIZE; i++)
-    {
-      for (int j = aliens[alienIdx].row; j < aliens[alienIdx].row + SQUARE_SIZE; j++)
-      {
-        fb[j][i] = GREEN;
-      }
-    }
-  }
 }
 
 void drawBullet()
@@ -241,10 +320,11 @@ void shoot()
   {
     drawBullet();
     currentBulletLine--;
+    /*
     if(checkBulletCollision()){
       deleteShoot(currentBulletLine);
       currentBulletLine = BULLET_INACTIVE_LINE;
-    }
+    }*/
   }
   else
   {
@@ -253,26 +333,22 @@ void shoot()
   }
 }
 
-
 inline boolean checkBulletCollision()
 {
-  for(int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++)
+  for (int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++)
   {
-    if(!aliens[alienIdx].isAlive) continue;
-    for(int temp_bulletLine = currentBulletLine; temp_bulletLine > currentBulletLine - BULLET_LENGTH;temp_bulletLine--)
+    if (!aliens[alienIdx].isAlive)
+      continue;
+    for (int temp_bulletLine = currentBulletLine; temp_bulletLine > currentBulletLine - BULLET_LENGTH; temp_bulletLine--)
     {
-      
+
       // Checks if bullet is inside the aliens bounds
-      if( temp_bulletLine     >= aliens[alienIdx].row 
-          && temp_bulletLine  <= (aliens[alienIdx].row + SQUARE_SIZE)
-          && currentBulletCol >= aliens[alienIdx].col
-          && currentBulletCol <= (aliens[alienIdx].col + SQUARE_SIZE)
-        )
-        {
-          aliens[alienIdx].isAlive = false;
-          return true;
-        }   
-    } 
+      if (temp_bulletLine >= aliens[alienIdx].row && temp_bulletLine <= (aliens[alienIdx].row + SQUARE_SIZE) && currentBulletCol >= aliens[alienIdx].col && currentBulletCol <= (aliens[alienIdx].col + SQUARE_SIZE))
+      {
+        aliens[alienIdx].isAlive = false;
+        return true;
+      }
+    }
   }
   return false;
 }

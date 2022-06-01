@@ -18,12 +18,12 @@
 #define LINES         240
 #define COLS          320
 #define FIRST_COL     0
-#define SQUARE_SIZE   10
+#define SQUARE_SIZE   25
 #define LAST_COL      320 - SQUARE_SIZE
 #define SQUARE_LINE   200
 #define DELAY         30 
 #define BULLET_LENGTH 6
-#define ALIENS_NUM 2
+#define ALIENS_NUM 4
 #define ALIEN_MINY 50
 #define ALIEN_MAXY 250
 #define SQUARE_SIZE_DOUBLE SQUARE_SIZE*2
