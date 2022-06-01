@@ -19,16 +19,16 @@ void initMatrix() {
 }
 
 void initAliens() {
-    // for even ALIENS_NUM
+    // For even number of aliens. 
     for (int i = 0, mult = 0; i < ALIENS_NUM; i++, mult++) {
         mult = i == ALIENS_PER_LINE ? 0: mult; 
-        aliens[i].row = ALIEN_MINX + (i > 0 ? (SQUARE_SIZE_DOUBLE * mult) : 0);
+        aliens[i].row = ALIEN_MINX + (i != 0 ? (SQUARE_SIZE_DOUBLE * mult) : 0);
         aliens[i].col = ALIEN_MINY + (i >= ALIENS_PER_LINE ? SQUARE_SIZE_DOUBLE : 0);
     }
 }
 
 void drawSquare() {
-    for (int row = SQUARE_LINE; row < SQUARE_LINE + SQUARE_SIZE; row++) {
+    for (int row = SHIP_START_ROW; row < SHIP_END_ROW; row++) {
         for (int col = currentCol; col < currentCol + SQUARE_SIZE; col++) {
             fb[row][col] = BLUE;
         }

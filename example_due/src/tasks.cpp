@@ -77,13 +77,13 @@ void taskDrawPlayer() {
         // Clean previous columns
         if (newCol > currentCol) {
             for (int col = currentCol; col < newCol; col++) {
-                for (int row = SQUARE_LINE; row < SQUARE_SIZE + SQUARE_LINE; row++) {
+                for (int row = SHIP_START_ROW; row < SQUARE_SIZE + SHIP_START_ROW; row++) {
                     fb[row][col] = WHITE;
                 }
             }
         } else {
             for (int col = currentCol; col >= newCol; col--) {
-                for (int row = SQUARE_LINE; row < SQUARE_SIZE + SQUARE_LINE; row++) {
+                for (int row = SHIP_START_ROW; row < SQUARE_SIZE + SHIP_START_ROW; row++) {
                     fb[row][col + SQUARE_SIZE] = WHITE;
                 }
             }
@@ -92,7 +92,7 @@ void taskDrawPlayer() {
         currentCol = newCol;
 
         // Print the square.
-        for (int row = SQUARE_LINE; row < SQUARE_LINE + SQUARE_SIZE; row++) {
+        for (int row = SHIP_START_ROW; row < SHIP_START_ROW + SQUARE_SIZE; row++) {
             for (int col = currentCol; col < currentCol + SQUARE_SIZE; col++) {
                 fb[row][col] = BLUE;
             }

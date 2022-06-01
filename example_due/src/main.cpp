@@ -6,24 +6,31 @@
 #include "../include/tasks.h"
 
 void setup() {
-    initMatrix();  
-    initAliens(); 
-    delay(100);     // TODO search it more
-    setupClock(); 
-    drawSquare(); 
+    Serial.begin(9600);
+    initMatrix();
+    initAliens();
+    delay(100);  // TODO search it more
+    setupClock();
+    drawSquare();
+
 }
 
-void loop() {
+void loop() { 
+    long int t1 = micros();
     taskRight();
-    delay(10);
+    long int t2 = micros();
+    Serial.print("Time taken: ");
+    Serial.print(t2 - t1);
+    Serial.print(" microseconds");
+    delay(20);
     taskLeft();
-    delay(10);
+    delay(20);
     taskDrawPlayer();
-    delay(10);
+    delay(20);
     taskDrawAliens();
-    delay(10);
+    delay(20);
     taskMiddle();
-    delay(10);
+    delay(20);
     taskDrawBullet();
-    delay(10);
+    delay(20);
 }

@@ -20,7 +20,6 @@
 #define FIRST_COL     0
 #define SQUARE_SIZE   25
 #define LAST_COL      320 - SQUARE_SIZE
-#define SQUARE_LINE   200
 #define DELAY         30 
 #define BULLET_LENGTH 6
 #define ALIENS_NUM 4
@@ -30,7 +29,15 @@
 #define ALIEN_MAXY 250
 #define SQUARE_SIZE_DOUBLE SQUARE_SIZE*2
 #define BULLET_INACTIVE_LINE 0
-#define BULLET_START_LINE SQUARE_LINE - 2
+#define BULLET_START_LINE SHIP_START_ROW - 2
+
+
+// SQUARE =================================================================== 
+
+#define SHIP_START_ROW   200                            // The row where the ship (main square) is located. 
+#define SHIP_END_ROW SQUARE_SIZE + SHIP_START_ROW       // The position of the ship last row.      
+
+
 
 #define do20(x) x x x x x x x x x x x x x x x x x x x x
 #define do80(x) do20(x) do20(x) do20(x) do20(x)
