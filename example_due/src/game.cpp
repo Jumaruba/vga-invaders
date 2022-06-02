@@ -5,7 +5,7 @@
 int startCol = COLS / 2 - SQUARE_SIZE / 2;
 
 extern byte fb[LINES][COLS];  // Code matrix
-volatile alien aliens[ALIENS_NUM];
+alien aliens[ALIENS_NUM];
 volatile int currentCol = startCol;
 volatile int currentBulletLine = BULLET_INACTIVE_LINE;
 volatile int currentBulletCol;
@@ -56,7 +56,7 @@ void cleanShipLeft() {
     for (int row = SHIP_START_ROW; row < SHIP_END_ROW; row++) {
         fb[row][currentCol] = WHITE;
     }
-} 
+}
 
 void deleteShoot(int line) {
     for (int i = line + 1; i >= line - BULLET_LENGTH; i--) {

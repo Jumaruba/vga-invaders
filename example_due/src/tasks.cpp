@@ -37,6 +37,10 @@ void taskDrawBullet() {
     }
 }
 
+/**
+ * @brief This function is critical since it can be interrupted many times.  
+ * 
+ */
 void taskDrawAliens() {
     if (!isMoveLeft && aliens[ALIENS_NUM - 1].col >= ALIEN_MAXY) {
         isMoveLeft = true;
@@ -58,12 +62,18 @@ void taskDrawAliens() {
 
         aliens[alienIdx].col += move;
 
-        // Draw next column
+        long int t1 = micros();
+        
+        // DrawAlien: Draws the alien in the next column
         for (int i = aliens[alienIdx].col; i < aliens[alienIdx].col + SQUARE_SIZE; i++) {
             for (int j = aliens[alienIdx].row; j < aliens[alienIdx].row + SQUARE_SIZE; j++) {
                 fb[j][i] = GREEN;
             }
         }
+        long int t2 = micros();
+        Serial.print("Time taken: ");
+        Serial.print(t2 - t1);
+        Serial.print(" microseconds");
     }
 }
 
