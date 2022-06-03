@@ -15,17 +15,20 @@ void setup() {
 }
 
 void loop() {
-    taskRight();
-    delay(20);
-    taskLeft();
+    taskRight();  
     delay(20); 
-    taskDrawShip();
-    delay(20);  
-    taskDrawAliens(); 
-
+    taskLeft();  
+    delay(20); 
+    taskDrawShip(); 
+    delay(20); 
+    taskDrawAliens();  
+    delay(20);   
+    taskMiddle();  
     delay(20);
-    taskMiddle();
-    delay(20);
+    int t1 = micros(); 
     taskDrawBullet();
+    int t2 = micros(); 
+    Serial.print(t2-t1);
+    Serial.print(" ");
     delay(20);
 }

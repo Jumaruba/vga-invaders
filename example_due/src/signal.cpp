@@ -5,6 +5,7 @@ byte fb[LINES][COLS];
 
 void TC0_Handler()
 {
+
   long dummy = REG_TC0_SR0;
 
   if (line < 480)
@@ -21,7 +22,8 @@ void TC0_Handler()
 
   line++;
   if (line == 525)
-    line = 0;
+    line = 0; 
+
 }
 
 void setupClock() {

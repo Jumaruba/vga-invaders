@@ -10,6 +10,7 @@ volatile boolean isMoveLeft = false;
 extern volatile int currentBulletLine;
 extern volatile int currentBulletCol;
 extern volatile alien aliens[ALIENS_NUM];
+extern volatile int alive_aliens;
 
 void taskRight() {
     colMove += digitalRead(RIGHT_PIN) && currentCol < LAST_COL;
@@ -22,7 +23,7 @@ void taskLeft() {
 void taskMiddle() {
     if (currentBulletLine == BULLET_INACTIVE_LINE && digitalRead(SHOOT_PIN) == HIGH) {
         currentBulletCol = currentCol;
-        currentBulletLine = BULLET_START_LINE;
+        currentBulletLine = BULLET_START_LINE - BULLET_LENGTH;
     }
 }
 
@@ -30,11 +31,14 @@ void taskDrawBullet() {
     // Verify top screen limit
     if (currentBulletLine > BULLET_LENGTH && currentBulletLine != BULLET_INACTIVE_LINE) {
         drawBullet();
-        currentBulletLine--;
+        currentBulletLine-=BULLET_SPEED;
         if(checkBulletCollision()){
-            Serial.print("apagar");
             deleteShoot(currentBulletLine);
             currentBulletLine = BULLET_INACTIVE_LINE;
+            if(alive_aliens == 0){
+                initAliens();
+                alive_aliens = ALIENS_NUM;
+            }
         }
     } else {
         deleteShoot(currentBulletLine); //ERRADO PRA CARALHO
@@ -47,7 +51,12 @@ void taskDrawBullet() {
  * 
  */
 void taskDrawAliens() {
-    if (!isMoveLeft && aliens[ALIENS_NUM - 1].col >= ALIEN_MAXY) {
+    int last_alive_alien = ALIENS_NUM - 1;
+    for(int i = 0 ; i < ALIENS_NUM;i++){
+        if(aliens[i].isAlive)
+            last_alive_alien = i;
+    }        
+    if (!isMoveLeft && (aliens[last_alive_alien].col + SQUARE_SIZE) >= ALIEN_MAXY) {
         isMoveLeft = true;
     } else if (aliens[0].col <= 1 && isMoveLeft) {
         isMoveLeft = false;
@@ -58,25 +67,23 @@ void taskDrawAliens() {
 
     for (int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++) {
         byte current_color = aliens[alienIdx].isAlive ? GREEN : WHITE;
+
         // Clean previous line
         for (int i = aliens[alienIdx].row; i < SQUARE_SIZE + aliens[alienIdx].row; i++) {
             fb[i][aliens[alienIdx].col + deletePosCol] = WHITE;
         }
 
-        //aliens[alienIdx].col += move;
-
-        //long int t1 = micros();
         
+        aliens[alienIdx].col += move;
+
+        if(!aliens[alienIdx].isAlive)
+            continue;
         // DrawAlien: Draws the alien in the next column
         for (int i = aliens[alienIdx].col; i < aliens[alienIdx].col + SQUARE_SIZE; i++) {
             for (int j = aliens[alienIdx].row; j < aliens[alienIdx].row + SQUARE_SIZE; j++) {
                 fb[j][i] = current_color;
             }
         }
-        /*long int t2 = micros();
-        Serial.print("Time taken: ");
-        Serial.print(t2 - t1);
-        Serial.print(" microseconds");*/
     }
 }
 
