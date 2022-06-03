@@ -51,14 +51,22 @@ void taskDrawBullet() {
  * 
  */
 void taskDrawAliens() {
-    int last_alive_alien = ALIENS_NUM - 1;
+    int last_alive_alien;
+    int first_alive_alien;
+    bool isAliveFound = false;
     for(int i = 0 ; i < ALIENS_NUM;i++){
-        if(aliens[i].isAlive)
+        if(aliens[i].isAlive){
+            if(!isAliveFound){
+                first_alive_alien = i;
+                isAliveFound = true;
+            }
             last_alive_alien = i;
+        }    
+
     }        
     if (!isMoveLeft && (aliens[last_alive_alien].col + SQUARE_SIZE) >= ALIEN_MAXY) {
         isMoveLeft = true;
-    } else if (aliens[0].col <= 1 && isMoveLeft) {
+    } else if (aliens[first_alive_alien].col <= 1 && isMoveLeft) {
         isMoveLeft = false;
     }
 
