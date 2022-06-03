@@ -28,11 +28,16 @@ void taskMiddle() {
 
 void taskDrawBullet() {
     // Verify top screen limit
-    if (currentBulletLine > BULLET_LENGTH) {
+    if (currentBulletLine > BULLET_LENGTH && currentBulletLine != BULLET_INACTIVE_LINE) {
         drawBullet();
         currentBulletLine--;
+        if(checkBulletCollision()){
+            Serial.print("apagar");
+            deleteShoot(currentBulletLine);
+            currentBulletLine = BULLET_INACTIVE_LINE;
+        }
     } else {
-        deleteShoot(currentBulletLine);
+        deleteShoot(currentBulletLine); //ERRADO PRA CARALHO
         currentBulletLine = BULLET_INACTIVE_LINE;
     }
 }
@@ -52,28 +57,26 @@ void taskDrawAliens() {
     int deletePosCol = isMoveLeft ? SQUARE_SIZE : 0;
 
     for (int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++) {
-        if (!aliens[alienIdx].isAlive)
-            continue;
-
+        byte current_color = aliens[alienIdx].isAlive ? GREEN : WHITE;
         // Clean previous line
         for (int i = aliens[alienIdx].row; i < SQUARE_SIZE + aliens[alienIdx].row; i++) {
             fb[i][aliens[alienIdx].col + deletePosCol] = WHITE;
         }
 
-        aliens[alienIdx].col += move;
+        //aliens[alienIdx].col += move;
 
-        long int t1 = micros();
+        //long int t1 = micros();
         
         // DrawAlien: Draws the alien in the next column
         for (int i = aliens[alienIdx].col; i < aliens[alienIdx].col + SQUARE_SIZE; i++) {
             for (int j = aliens[alienIdx].row; j < aliens[alienIdx].row + SQUARE_SIZE; j++) {
-                fb[j][i] = GREEN;
+                fb[j][i] = current_color;
             }
         }
-        long int t2 = micros();
+        /*long int t2 = micros();
         Serial.print("Time taken: ");
         Serial.print(t2 - t1);
-        Serial.print(" microseconds");
+        Serial.print(" microseconds");*/
     }
 }
 
