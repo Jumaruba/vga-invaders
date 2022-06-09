@@ -28,21 +28,27 @@ void taskMiddle() {
 }
 
 void taskDrawBullet() {
-    // Verify top screen limit
-    if (currentBulletLine > BULLET_LENGTH && currentBulletLine != BULLET_INACTIVE_LINE) {
-        drawBullet();
-        currentBulletLine-=BULLET_SPEED;
-        if(checkBulletCollision()){
-            deleteShoot(currentBulletLine);
-            currentBulletLine = BULLET_INACTIVE_LINE;
-            if(alive_aliens == 0){
-                initAliens();
-                alive_aliens = ALIENS_NUM;
-            }
-        }
-    } else {
-        deleteShoot(currentBulletLine); //ERRADO PRA CARALHO
+    // No active bullet
+    if(currentBulletLine == BULLET_INACTIVE_LINE){
+        return;
+    }
+
+    // Check vertical limit
+    if (currentBulletLine <= BULLET_LENGTH) {
+        deleteShoot(currentBulletLine); 
         currentBulletLine = BULLET_INACTIVE_LINE;
+        return;
+    }
+
+    drawBullet();
+    currentBulletLine-=BULLET_SPEED;
+    if(checkBulletCollision()){
+        deleteShoot(currentBulletLine);
+        currentBulletLine = BULLET_INACTIVE_LINE;
+        if(alive_aliens == 0){
+            initAliens();
+            alive_aliens = ALIENS_NUM;
+        }
     }
 }
 

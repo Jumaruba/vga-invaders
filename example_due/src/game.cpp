@@ -22,24 +22,11 @@ void initMatrix() {
 
 
 void initAliens() {
-    // For even number of aliens.
-    /*
-    //mult = i == ALIENS_PER_LINE ? 0 : mult;
-    aliens[i].row = ALIEN_MINX;
-    aliens[i].col = ALIEN_MINY + i * SQUARE_SIZE_DOUBLE;
-    */
     for (int i = 0, mult = 0; i < ALIENS_NUM; i++, mult++) {
         aliens[i].row = ALIEN_MINX;
         aliens[i].col = ALIEN_MINY + i * SQUARE_SIZE_DOUBLE;
         aliens[i].isAlive = true;
     }
-    /*
-    for (int i = 0, mult = 0; i < ALIENS_NUM; i++, mult++) {
-        mult = i == ALIENS_PER_LINE ? 0 : mult;
-        aliens[i].row = ALIEN_MINX + (i != 0 ? (SQUARE_SIZE_DOUBLE * mult) : 0);
-        aliens[i].col = ALIEN_MINY + (i >= ALIENS_PER_LINE ? SQUARE_SIZE_DOUBLE : 0);
-    }
-    */
 }
 
 // DRAWS ==================================================
@@ -92,9 +79,10 @@ void deleteShoot(int line) {
 }
 
 
-// GAME LOGIC FUNCTION
-
 boolean checkBulletCollision() {
+    if(currentBulletLine > SQUARE_SIZE + ALIEN_MINX + BULLET_LENGTH + 2)
+        return false; 
+    
     for (int alienIdx = 0; alienIdx < ALIENS_NUM; alienIdx++) {
         alien temp_alien = aliens[alienIdx];
         if (!temp_alien.isAlive)

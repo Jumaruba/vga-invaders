@@ -25,10 +25,10 @@ void loop() {
     delay(20);   
     taskMiddle();  
     delay(20);
-    int t1 = micros(); 
+    //int t1 = micros(); 
     taskDrawBullet();
-    int t2 = micros(); 
-    Serial.print(t2-t1);
-    Serial.print(" ");
+    //int t2 = micros(); 
+    //Serial.print(t2-t1);
+    //Serial.print(" ");
     delay(20);
 }
