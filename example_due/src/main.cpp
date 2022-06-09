@@ -14,21 +14,38 @@ void setup() {
     drawShip();
 }
 
-void loop() {
-    taskRight();  
-    delay(20); 
-    taskLeft();  
-    delay(20); 
+void cycle1(){
+    taskDrawAliens(); 
+    taskLeft(); 
     taskDrawShip(); 
-    delay(20); 
-    taskDrawAliens();  
-    delay(20);   
-    taskMiddle();  
-    delay(20);
-    //int t1 = micros(); 
+}
+
+void cycle2(){
+    taskRight();
+    taskDrawShip(); 
+    delay(3);
+}
+
+void cycle3(){
+    taskMiddle();
     taskDrawBullet();
-    //int t2 = micros(); 
-    //Serial.print(t2-t1);
-    //Serial.print(" ");
-    delay(20);
+    delay(3);
+}
+
+void cycle4(){
+    taskLeft();
+    taskDrawShip();
+    delay(3);
+}
+
+
+
+void loop() {
+    cycle1();
+    cycle2();
+    cycle4(); 
+    cycle3();
+    cycle2();
+    delayMicroseconds(3060);
+ 
 }
