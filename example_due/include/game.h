@@ -2,26 +2,31 @@
 #define GAME_H
 
 #include <Arduino.h>
+
+#include "alien.h"
 #include "macros.h"
 
-using namespace std; 
+using namespace std;
 
+// INIT ==================================
 void initMatrix();
 
 void initAliens();
 
-void moveLeft();
-
-void moveRight();
-
-void shoot();
-
-void drawAliens();
+// DRAW ==================================
+void drawShip();
 
 void drawBullet();
 
-void drawSquare();
+// CLEAN =================================
+void cleanShipRight();
 
-inline void deleteShoot(int line);
+void cleanShipLeft();
+
+void deleteShoot(int line);
+
+
+// OTHERS ===============================
+boolean checkBulletCollision();
 
 #endif
