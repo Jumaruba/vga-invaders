@@ -15,9 +15,9 @@ void setup() {
 }
 
 void cycle1(){
-    taskDrawAliens(); 
     taskLeft(); 
     taskDrawShip(); 
+    taskDrawAliens(); 
 }
 
 void cycle2(){
@@ -27,13 +27,15 @@ void cycle2(){
 }
 
 void cycle3(){
+    taskLeft();
+    taskDrawShip(); 
     taskMiddle();
     taskDrawBullet();
-    delay(3);
+    delayMicroseconds(2940);
 }
 
 void cycle4(){
-    taskLeft();
+    taskRight();
     taskDrawShip();
     delay(3);
 }
@@ -43,9 +45,8 @@ void cycle4(){
 void loop() {
     cycle1();
     cycle2();
-    cycle4(); 
     cycle3();
-    cycle2();
+    cycle4(); 
     delayMicroseconds(3060);
  
 }
