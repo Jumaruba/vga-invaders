@@ -42,15 +42,16 @@ void setupClock() {
 
   REG_PIOD_OWER = 0xff;       // Enables writing to the pins with register ODSR
   REG_PMC_PCER0 = 1 << 27;    // Enable Timer 0 (peripheral with id 27 = TC0)
-  REG_PIOB_PDR = 1 << 25;     // Disable PIO, enable peripheral
-  REG_PIOB_ABSR = 1 << 25;    // Select peripheral B
+  REG_PIOB_PDR = 1 << 25;     // Disable GPIO, enable peripheral (Hsync)
+  REG_PIOB_ABSR = 1 << 25;    // Select peripheral B.25 (Hsync)
   REG_TC0_WPMR = 0x54494D00;  // Enable write to registers
   REG_TC0_CMR0 = 0b00000000000010011100010000000000; // Set channel mode register
                                                      // TIMER_CLOCK1 => MCK/2
                                                      // Wave form mode
+                                                     // Set TIOA0 (HSYNC)
 
-  REG_TC0_RC0 = 1334; // Counter Period = MCK/2/RC0 = 0,0315Hz => T=31.74 
-  REG_TC0_RA0 = 1174; // Duty Cycle = (RC0 - 160)
+  REG_TC0_RC0 = 1334; // Counter Period = MCK/2/RC0 = 0,0315Hz => T=31.74 (HSYNC)
+  REG_TC0_RA0 = 1174; // Duty Cycle = RC0 - 160 (HSYNC)
   REG_TC0_CCR0 = 0b101; // Start counter
   REG_TC0_IER0 = 0b00010000;  // Enable interrupt on counter
   REG_TC0_IDR0 = 0b11101111;  // Disable other iterrupts
