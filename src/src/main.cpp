@@ -9,7 +9,7 @@ void setup() {
     Serial.begin(9600);
     initMatrix();
     initAliens();
-    delay(100);  // TODO search it more
+    delay(100);
     setupClock();
     drawShip();
 }
