@@ -12,8 +12,8 @@ void TC0_Handler()
   if (line < 480)
   {
     byte *p = fb[line >> 1];
-    MNOP(160); // Horizontal back porch + front porch + sync pulse
-    do320(REG_PIOD_ODSR = *p++; MNOP(2);)
+    MNOP(160); // Horizontal Back Porch
+    do320(REG_PIOD_ODSR = *p++; MNOP(2);) 
     REG_PIOD_ODSR = 0;
   }
   // After Vertical front porch
