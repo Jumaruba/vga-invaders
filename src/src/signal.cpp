@@ -6,7 +6,7 @@ byte fb[LINES][COLS];
 void TC0_Handler()
 {
 
-  long dummy = REG_TC0_SR0;
+  long dummy = REG_TC0_SR0; // clear interrupt flag
 
   // Draw current line
   if (line < 480)
@@ -51,10 +51,10 @@ void setupClock() {
                                                      // Set TIOA0 (HSYNC)
 
   REG_TC0_RC0 = 1334; // Counter Period = MCK/2/RC0 = 0,0315Hz => T=31.74 (HSYNC)
-  REG_TC0_RA0 = 1174; // Duty Cycle = RC0 - 160 (HSYNC)
+  REG_TC0_RA0 = 1174; // Duty cycle (line time excluding the horizontal sync pulse)
   REG_TC0_CCR0 = 0b101; // Start counter
   REG_TC0_IER0 = 0b00010000;  // Enable interrupt on counter
-  REG_TC0_IDR0 = 0b11101111;  // Disable other iterrupts
+  REG_TC0_IDR0 = 0b11101111;  // Disable other interrupts
   NVIC_EnableIRQ(TC0_IRQn);   // Enable TC0 interrupts
 }
 

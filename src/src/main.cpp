@@ -40,13 +40,10 @@ void cycle4(){
     delay(3);
 }
 
-
-
 void loop() {
     cycle1();
     cycle2();
     cycle3();
     cycle4(); 
     delayMicroseconds(3060);
- 
 }
