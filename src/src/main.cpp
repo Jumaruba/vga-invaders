@@ -23,7 +23,7 @@ void cycle1(){
 void cycle2(){
     taskRight();
     taskDrawShip(); 
-    delay(3);
+    delayMicroseconds(695); 
 }
 
 void cycle3(){
@@ -31,19 +31,18 @@ void cycle3(){
     taskDrawShip(); 
     taskMiddle();
     taskDrawBullet();
-    delayMicroseconds(2940);
+    delayMicroseconds(687); 
 }
 
 void cycle4(){
     taskRight();
     taskDrawShip();
-    delay(3);
+    delayMicroseconds(695);
 }
 
 void loop() {
-    cycle1();
-    cycle2();
-    cycle3();
-    cycle4(); 
-    delayMicroseconds(3060);
+    cycle1();     
+    cycle2();      
+    cycle3();     
+    cycle4();   
 }
